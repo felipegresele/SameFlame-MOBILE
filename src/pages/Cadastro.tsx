@@ -1,159 +1,177 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
-import { Controller, useForm } from "react-hook-form"
-import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native"
+import { useState } from "react"
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native"
 import { RootStackParamList } from "../types/routes"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 
-export interface FormData {
-    username: string,
-    password: string,
-    confirmPassword: string,
-    email: string,
-}
 
 type Props = NativeStackScreenProps<RootStackParamList, "Cadastro">
 
-function Cadastro({ navigation }: Props) {
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-        watch,
-        reset,
-    } = useForm<FormData>({
-        defaultValues: {
-            username: "",
-            password: "",
-            confirmPassword: "",
-            email: "",
+const Cadastro = ({ navigation }: Props) => {
+    const [formData, setFormData] = useState({
+        nomeCompleto: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        endereco: {
+            logradouro: "",
+            bairro: "",
+            cidade: "",
+            estado: "",
+            cep: "",
         },
     });
 
-    const password = watch("password");
+    // Removi tipos (string) para JS puro
+    const handleChange = (field, value) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+    };
 
-    async function HandleSign(data: FormData) {
+    const handleEnderecoChange = (field, value) => {
+        setFormData((prev) => ({
+            ...prev,
+            endereco: { ...prev.endereco, [field]: value },
+        }));
+    };
+
+    const handleSubmit = async () => {
+        const { nomeCompleto, email, password, confirmPassword, endereco } = formData;
+
+        if (!nomeCompleto || !email || !password || !confirmPassword) {
+            Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert("Erro", "As senhas não coincidem.");
+            return;
+        }
+
+        // Se quiser validar endereço, pode fazer aqui
+
         try {
-            const usersData = await AsyncStorage.getItem("@usuarios");
-            const users = usersData ? JSON.parse(usersData) : [];
-            
-            const userExists = users.find((user: FormData) => user.username === data.username)
+            const response = await fetch("http://10.0.2.2:8080/usuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nomeCompleto,
+                    email,
+                    password,
+                    cargo: "ADMIN",
+                    endereco,
+                }),
+            });
 
-            if (userExists) {
-                Alert.alert("Usuário já existe!")
-                return;
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Erro ao cadastrar usuário");
             }
 
-            users.push(data);
-            await AsyncStorage.setItem("@usuarios", JSON.stringify(users))
-            Alert.alert("Usuário cadastrado!")
-            //Navegar para pagína de Login
-            navigation.navigate("Login")
+            Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
         } catch (error) {
-            Alert.alert("Erro ao salvar os dados")
-            console.error("Erro ao salvar os dados:", error)
+            Alert.alert("Erro", error?.message || "Erro desconhecido");
         }
-    }
+    };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Cadastro</Text>
-            <View>
-                <Text style={styles.label}>Usuário:</Text>
-                <Controller
-                    name="username"
-                    control={control}
-                    rules={{ required: "Usuário é obrigatório" }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="Digite seu usuário"
-                            style={styles.input}
-                        />
-                    )}
-                />
-                {errors?.username && <Text style={styles.error}>{errors.username.message}</Text>}
+        <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
+            <Text style={styles.label}>Nome Completo</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Digite seu nome completo"
+                value={formData.nomeCompleto}
+                onChangeText={(text) => handleChange("nomeCompleto", text)}
+            />
 
-                <Text style={styles.label}>Email:</Text>
-                <Controller
-                    name="email"
-                    control={control}
-                    rules={{
-                        required: "Email é obrigatório",
-                        pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-                            message: "Email inválido",
-                        },
-                    }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="Digite seu email"
-                            keyboardType="email-address"
-                            style={styles.input}
-                        />
-                    )}
-                />
-                    
-                {errors?.email && <Text style={styles.error}>{errors.email.message}</Text>}
+            <Text>Email</Text>
+            <TextInput
+                placeholder="Digite seu e-mail"
+                value={formData.email}
+                onChangeText={(text) => handleChange("email", text)}
+                autoCapitalize="none"
+                keyboardType="email-address"
+            />
 
-                <Text style={styles.label}>Senha:</Text>
-                <Controller
-                    name="password"
-                    control={control}
-                    rules={{
-                        required: "Senha é obrigatória",
-                        maxLength: {
-                            value: 15,
-                            message: "A senha não pode ter mais de 15 caracteres",
-                        },
-                    }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="Digite sua senha"
-                            secureTextEntry
-                            style={styles.input}
-                        />
-                    )}
-                />
-                {errors?.password && <Text style={styles.error}>{errors.password.message}</Text>}
+            <Text>Senha</Text>
+            <TextInput
+                placeholder="Digite sua senha"
+                secureTextEntry
+                value={formData.password}
+                onChangeText={(text) => handleChange("password", text)}
+            />
 
-                <Text style={styles.label}>Confirmar Senha:</Text>
-                <Controller
-                    name="confirmPassword"
-                    control={control}
-                    rules={{
-                        required: "Confirmação de senha é obrigatória",
-                        validate: (value) =>
-                            value === password || "As senhas não coincidem",
-                    }}
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="Confirme sua senha"
-                            secureTextEntry
-                            keyboardType="visible-password"
-                            style={styles.input}
-                        />
-                    )}
-                />
-                {errors?.confirmPassword && (
-                    <Text style={styles.error}>{errors.confirmPassword.message}</Text>
-                )}
+            <Text>Confirmar Senha</Text>
+            <TextInput
+                placeholder="Confirme sua senha"
+                secureTextEntry
+                value={formData.confirmPassword}
+                onChangeText={(text) => handleChange("confirmPassword", text)}
+            />
 
-                <TouchableOpacity onPress={handleSubmit(HandleSign)} style={styles.btn}>
-                    <Text style={styles.btnText}>Cadastrar</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            <Text>Logradouro</Text>
+            <TextInput
+                placeholder="Rua/Avenida"
+                value={formData.endereco.logradouro}
+                onChangeText={(text) => handleEnderecoChange("logradouro", text)}
+            />
+
+            <Text>Bairro</Text>
+            <TextInput
+                placeholder="Bairro"
+                value={formData.endereco.bairro}
+                onChangeText={(text) => handleEnderecoChange("bairro", text)}
+            />
+
+            <Text>Cidade</Text>
+            <TextInput
+                placeholder="Cidade"
+                value={formData.endereco.cidade}
+                onChangeText={(text) => handleEnderecoChange("cidade", text)}
+            />
+
+            <Text>Estado</Text>
+            <TextInput
+                placeholder="Estado"
+                value={formData.endereco.estado}
+                onChangeText={(text) => handleEnderecoChange("estado", text)}
+            />
+
+            <Text>CEP</Text>
+            <TextInput
+                placeholder="00000-000"
+                value={formData.endereco.cep}
+                onChangeText={(text) => {
+                    // Permite apenas números e o hífen no formato correto
+                    const formatted = text.replace(/[^\d-]/g, '');
+
+                    // Pode colocar uma máscara simples para adicionar o hífen automaticamente
+                    let masked = formatted;
+                    if (formatted.length === 5 && !formatted.includes('-')) {
+                        masked = formatted + '-';
+                    }
+                    if (masked.length > 9) {
+                        masked = masked.slice(0, 9);
+                    }
+                    handleEnderecoChange("cep", masked);
+                }}
+                keyboardType="default"
+            />
+
+            <TouchableOpacity
+                style={{
+                    marginTop: 20,
+                    backgroundColor: "black",
+                    padding: 15,
+                    borderRadius: 5,
+                }}
+                onPress={handleSubmit}
+            >
+                <Text style={{ color: "white", textAlign: "center" }}>Cadastrar</Text>
+            </TouchableOpacity>
+        </ScrollView>
     );
-}
+};
 
-export default Cadastro
+export default Cadastro;
 
 const styles = StyleSheet.create({
     container: {
