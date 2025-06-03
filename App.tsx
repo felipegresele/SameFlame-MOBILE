@@ -12,6 +12,7 @@ import Emergencia from './src/pages/Emergencia';
 import Alerta from './src/pages/Alerta';
 import RelatarIncendio from './src/pages/RelatarIncendio';
 import Historico from './src/pages/Historico';
+import EditarAlerta from './src/pages/EditarAlerta';
 
 
 
@@ -56,6 +57,8 @@ export default function App() {
         <Stack.Screen name="Mapa" component={Mapa} />
         <Stack.Screen name="AppDrawer" component={AppDrawer} options={{ headerShown: false }}/>
         <Stack.Screen name="Historico" component={Historico} />
+        <Stack.Screen name="EditarAlerta" component={EditarAlerta} />
+        <Stack.Screen name="Alerta" component={Alerta} />
         </Stack.Navigator>
         
       </NavigationContainer>

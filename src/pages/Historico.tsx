@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, Button, Alert, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/routes";
 
-export type Props = NativeStackScreenProps<RootStackParamList, "Historico">
+export type Props = NativeStackScreenProps<RootStackParamList, "Historico">;
 
 function Historico({ navigation }: Props) {
   const [alertas, setAlertas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Função para carregar alertas do servidor
   async function carregarAlertas() {
     setLoading(true);
     const token = await AsyncStorage.getItem("@token_jwt");
@@ -22,12 +29,13 @@ function Historico({ navigation }: Props) {
 
     try {
       const response = await fetch("http://10.0.2.2:8080/denuncias", {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAlertas(data);
+        setAlertas(data.content);
       } else {
         Alert.alert("Erro", "Falha ao carregar alertas.");
       }
@@ -42,7 +50,6 @@ function Historico({ navigation }: Props) {
     carregarAlertas();
   }, []);
 
-  // Função para deletar alerta
   async function deletarAlerta(id) {
     const token = await AsyncStorage.getItem("@token_jwt");
     if (!token) {
@@ -58,7 +65,7 @@ function Historico({ navigation }: Props) {
 
       if (response.ok) {
         Alert.alert("Sucesso", "Alerta deletado!");
-        carregarAlertas(); // Atualiza lista após deletar
+        carregarAlertas();
       } else {
         Alert.alert("Erro", "Erro ao deletar alerta.");
       }
@@ -67,7 +74,6 @@ function Historico({ navigation }: Props) {
     }
   }
 
-  // Função para confirmar exclusão
   function confirmarDelecao(id) {
     Alert.alert(
       "Confirmar",
@@ -79,26 +85,32 @@ function Historico({ navigation }: Props) {
     );
   }
 
-  // Render item da lista
   function renderItem({ item }) {
     return (
       <View style={styles.itemContainer}>
         <Text style={styles.nome}>{item.nome}</Text>
         <Text>{item.descricao}</Text>
-        <Text>{item.endereco.logradouro}, {item.endereco.bairro} - {item.endereco.cidade}/{item.endereco.estado}</Text>
+        <Text>
+          {item.endereco.logradouro}, {item.endereco.bairro} - {item.endereco.cidade}/{item.endereco.estado}
+        </Text>
         <Text>CEP: {item.endereco.cep}</Text>
 
         <View style={styles.buttonsRow}>
-          <Button
-            title="Atualizar"
-            color="#FF8C00"
-            onPress={() => navigation.navigate("EditarAlerta", { alerta: item, onRefresh: carregarAlertas })}
-          />
-          <Button
-            title="Deletar"
-            color="#FF4500"
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate("EditarAlerta", { alerta: item, onRefresh: carregarAlertas })
+            }
+          >
+            <Text style={styles.buttonText}>Atualizar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "#ff6347" }]}
             onPress={() => confirmarDelecao(item.id)}
-          />
+          >
+            <Text style={styles.buttonText}>Deletar</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -106,16 +118,26 @@ function Historico({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Button title="Atualizar Lista" color="#FF6347" onPress={carregarAlertas} />
+      <TouchableOpacity style={styles.updateButton} onPress={carregarAlertas}>
+        <Text style={styles.updateButtonText}>Atualizar Lista</Text>
+      </TouchableOpacity>
+            <TouchableOpacity style={styles.updateButton} onPress={() => navigation.navigate("EditarAlerta")}>
+        <Text style={styles.updateButtonText}>Adicionar Novo Alerta</Text>
+      </TouchableOpacity>
+
       {loading ? (
-        <ActivityIndicator size="large" color="#FF4500" style={{ marginTop: 20 }} />
+        <ActivityIndicator size="large" color="orange" style={{ marginTop: 20 }} />
       ) : (
         <FlatList
           data={alertas}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 20 }}
-          ListEmptyComponent={<Text style={{ marginTop: 20, textAlign: "center" }}>Nenhum alerta encontrado.</Text>}
+          ListEmptyComponent={
+            <Text style={{ marginTop: 20, textAlign: "center", color: "gray" }}>
+              Nenhum alerta encontrado.
+            </Text>
+          }
         />
       )}
     </View>
@@ -128,23 +150,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: "#330000"  // tema fogo fundo escuro
+    backgroundColor: "white"
   },
   itemContainer: {
-    backgroundColor: "#660000",
+    backgroundColor: "#f9f9f9",
     padding: 15,
     marginVertical: 8,
-    borderRadius: 8
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "orange"
   },
   nome: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#FF7F50",
+    color: "orange",
     marginBottom: 5
   },
   buttonsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10
+  },
+  button: {
+    backgroundColor: "orange",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold"
+  },
+  updateButton: {
+    backgroundColor: "orange",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: "center"
+  },
+  updateButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16
   }
 });

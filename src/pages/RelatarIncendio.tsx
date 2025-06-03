@@ -1,12 +1,12 @@
 import { useRoute, useNavigation } from "@react-navigation/native";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Text, View, TextInput, StyleSheet, Switch, TouchableOpacity, Alert } from "react-native";
 import { Status, Tipo, Fase } from "../types/enum";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/routes";
 import { Picker } from '@react-native-picker/picker';
-import { v4 as uuidv4 } from 'uuid'; // pra gerar id único, se não tiver instale com npm install uuid
+import { v4 as uuidv4 } from 'uuid';
 
 interface IncendioFormData {
   descricao: string;
@@ -24,9 +24,8 @@ function RelatarIncendio({ navigation }: Props) {
   const route = useRoute();
   const {
     control,
-    reset,
-    setValue,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<IncendioFormData>({
     defaultValues: {
@@ -41,23 +40,58 @@ function RelatarIncendio({ navigation }: Props) {
   });
 
   // Pega coordenadas enviadas via navegação
-  const { latitude, longitude } = route.params as { latitude: number; longitude: number };
+  const params = route.params as { latitude?: number; longitude?: number } | undefined;
 
-  const onSubmit = (data: any) => {
+  useEffect(() => {
+    // Se não veio latitude ou longitude, alerta e volta para o mapa
+    if (!params?.latitude || !params?.longitude) {
+      Alert.alert(
+        "Localização não selecionada",
+        "Por favor, volte ao mapa e selecione o local ou próximo do incêndio.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Mapa"),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  }, [params, navigation]);
+
+  // Se não tem coords, não renderiza formulário para evitar crash
+  if (!params?.latitude || !params?.longitude) {
+    return null;
+  }
+
+  const onSubmit = (data: IncendioFormData) => {
     const newIncendio = {
       id: uuidv4(),
-      latitude,
-      longitude,
+      latitude: params.latitude,
+      longitude: params.longitude,
       descricao: data.descricao,
       status: data.status,
       fase: data.fase,
       tipo: data.tipo,
+      precisaResgaste: data.precisaResgaste,
+      pessoasAfetadas: data.pessoasAfetadas,
+      dataHora: data.dataHora,
     };
 
-    // Passa de volta para a tela do mapa
-    navigation.navigate("Mapa", { newIncendio });
-
-    Alert.alert("Incêndio relatado com sucesso!", `Descrição: ${data.descricao}`);
+    Alert.alert(
+      "Incêndio relatado com sucesso!",
+      "Em breve aparecerá no mapa e a equipe de resgate já foi comunicada.",
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            reset(); // Reseta os campos do formulário
+            navigation.navigate("Mapa", { newIncendio }); // Navega para o mapa com os dados
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   return (
@@ -136,8 +170,8 @@ function RelatarIncendio({ navigation }: Props) {
         render={({ field: { onChange, value } }) => (
           <TextInput
             keyboardType="numeric"
-            onChangeText={(text) => onChange(Number(text))}
-            value={value?.toString()}
+            onChangeText={(text) => onChange(Number(text) || 0)}
+            value={value?.toString() || "0"}
             style={styles.input}
           />
         )}
@@ -171,8 +205,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     marginTop: 4,
-    borderWidth: 1,
-    borderColor: "#ccc",
   },
   button: {
     backgroundColor: "#FF6B00",

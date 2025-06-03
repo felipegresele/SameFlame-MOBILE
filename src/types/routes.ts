@@ -10,4 +10,5 @@ export type RootStackParamList = {
     AppDrawer: undefined,
     Historico: undefined,
     Alerta: undefined,
+    EditarAlerta: undefined,
 }
