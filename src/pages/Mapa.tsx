@@ -123,7 +123,7 @@ function Mapa({ navigation }: Props) {
           style={[styles.button, styles.dashboardButton]}
           onPress={() => navigation.navigate("Alerta")}
         >
-          <Text style={styles.buttonText}>Alerta</Text>
+          <Text style={styles.buttonText}>Alerta +</Text>
         </TouchableOpacity>
       </View>
       <MapView
