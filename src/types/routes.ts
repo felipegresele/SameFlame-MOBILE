@@ -6,8 +6,8 @@ export type RootStackParamList = {
     RelatarIncendio: undefined,
     Alertas: undefined,
     Emergencia: undefined,
-    Abrigos: undefined,
     Mapa: undefined,
-    Dashboard: undefined,
     AppDrawer: undefined,
+    Historico: undefined,
+    Alerta: undefined,
 }

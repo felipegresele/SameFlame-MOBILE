@@ -21,17 +21,16 @@ const Cadastro = ({ navigation }: Props) => {
         },
     });
 
-    // Removi tipos (string) para JS puro
-    const handleChange = (field, value) => {
+    const handleChange = (field: string, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
-    };
-
-    const handleEnderecoChange = (field, value) => {
+      };
+      
+      const handleEnderecoChange = (field: string, value: string) => {
         setFormData((prev) => ({
-            ...prev,
-            endereco: { ...prev.endereco, [field]: value },
+          ...prev,
+          endereco: { ...prev.endereco, [field]: value },
         }));
-    };
+      };
 
     const handleSubmit = async () => {
         const { nomeCompleto, email, password, confirmPassword, endereco } = formData;
@@ -45,8 +44,6 @@ const Cadastro = ({ navigation }: Props) => {
             Alert.alert("Erro", "As senhas não coincidem.");
             return;
         }
-
-        // Se quiser validar endereço, pode fazer aqui
 
         try {
             const response = await fetch("http://10.0.2.2:8080/usuarios", {
@@ -67,8 +64,13 @@ const Cadastro = ({ navigation }: Props) => {
             }
 
             Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+            navigation.navigate("Login")
         } catch (error) {
-            Alert.alert("Erro", error?.message || "Erro desconhecido");
+            if (error instanceof Error) {
+                Alert.alert("Erro", error.message);
+              } else {
+                Alert.alert("Erro", "Erro desconhecido");
+              }
         }
     };
 

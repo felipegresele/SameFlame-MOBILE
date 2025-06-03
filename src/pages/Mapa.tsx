@@ -121,9 +121,9 @@ function Mapa({ navigation }: Props) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.dashboardButton]}
-          onPress={() => navigation.navigate("Dashboard")}
+          onPress={() => navigation.navigate("Alerta")}
         >
-          <Text style={styles.buttonText}>Dashboard</Text>
+          <Text style={styles.buttonText}>Alerta</Text>
         </TouchableOpacity>
       </View>
       <MapView

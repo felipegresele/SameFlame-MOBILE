@@ -8,10 +8,10 @@ import Login from './src/pages/Login';
 import Cadastro from './src/pages/Cadastro';
 import Mapa from './src/pages/Mapa';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import Dashboard from './src/pages/Dashboard';
 import Emergencia from './src/pages/Emergencia';
 import Alerta from './src/pages/Alerta';
 import RelatarIncendio from './src/pages/RelatarIncendio';
+import Historico from './src/pages/Historico';
 
 
 
@@ -32,9 +32,9 @@ export default function App() {
           drawerLabelStyle: {color: "#000"},
         }}>
           <Drawer.Screen name="Mapa" component={Mapa} />
-          <Drawer.Screen name="Dashboard" component={Dashboard} />
           <Drawer.Screen name="RelatarIncendio" component={RelatarIncendio} options={{title: "Relatar Incêndio"}}/>
           <Drawer.Screen name="Alertas" component={Alerta}/>
+          <Drawer.Screen name="Historico" component={Historico} options={{title: "Histórico"}} />
           <Drawer.Screen name="Emergencia" component={Emergencia} options={{title: "Emergência", headerTintColor: "red"}} />
       </Drawer.Navigator>
     )
@@ -55,6 +55,7 @@ export default function App() {
         <Stack.Screen name="Cadastro" component={Cadastro} />
         <Stack.Screen name="Mapa" component={Mapa} />
         <Stack.Screen name="AppDrawer" component={AppDrawer} options={{ headerShown: false }}/>
+        <Stack.Screen name="Historico" component={Historico} />
         </Stack.Navigator>
         
       </NavigationContainer>
