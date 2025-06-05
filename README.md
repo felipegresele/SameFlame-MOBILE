@@ -232,7 +232,7 @@ npx expo start  # Expo abrirá o QR‑Code
 
 # Back‑end (em nova aba)
 cd server
-./mvnw spring-boot:run  # http://localhost:8080
+./mvn spring-boot:run  # http://localhost:8080
 
 ✨ Estilo & Temas
 
