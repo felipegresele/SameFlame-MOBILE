@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function Alerta() {
@@ -11,6 +19,16 @@ function Alerta() {
   const [estado, setEstado] = useState("");
   const [cep, setCep] = useState("");
 
+  const [erros, setErros] = useState({
+    nome: "",
+    descricao: "",
+    logradouro: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    cep: "",
+  });
+
   function formatarCep(text) {
     const numeros = text.replace(/\D/g, "");
     const numerosLimitados = numeros.slice(0, 8);
@@ -21,6 +39,34 @@ function Alerta() {
     }
   }
 
+  function validarCampos() {
+    const novosErros: any = {};
+
+    if (!nome || nome.trim().length < 5 || nome.trim().length > 24) {
+      novosErros.nome = "O nome deve ter entre 5 e 24 caracteres.";
+    }
+
+    if (
+      !descricao ||
+      descricao.trim().length < 10 ||
+      descricao.trim().length > 150
+    ) {
+      novosErros.descricao = "A descrição deve ter entre 10 e 150 caracteres.";
+    }
+
+    if (!logradouro.trim()) novosErros.logradouro = "O logradouro é obrigatório.";
+    if (!bairro.trim()) novosErros.bairro = "O bairro é obrigatório.";
+    if (!cidade.trim()) novosErros.cidade = "A cidade é obrigatória.";
+    if (!estado.trim()) novosErros.estado = "O estado é obrigatório.";
+
+    if (!/^\d{5}-\d{3}$/.test(cep)) {
+      novosErros.cep = "CEP inválido. Use o formato 00000-000.";
+    }
+
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+  }
+
   async function enviarDenuncia() {
     const token = await AsyncStorage.getItem("@token_jwt");
 
@@ -29,8 +75,7 @@ function Alerta() {
       return;
     }
 
-    if (!/^\d{5}-\d{3}$/.test(cep)) {
-      Alert.alert("Erro", "CEP inválido. Use o formato 00000-000.");
+    if (!validarCampos()) {
       return;
     }
 
@@ -42,8 +87,8 @@ function Alerta() {
         bairro,
         cidade,
         estado,
-        cep
-      }
+        cep,
+      },
     };
 
     try {
@@ -51,9 +96,9 @@ function Alerta() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(denuncia)
+        body: JSON.stringify(denuncia),
       });
 
       if (response.ok) {
@@ -65,6 +110,7 @@ function Alerta() {
         setCidade("");
         setEstado("");
         setCep("");
+        setErros({});
       } else {
         const error = await response.json();
         console.log("Erro do servidor:", error);
@@ -82,70 +128,106 @@ function Alerta() {
       <TextInput
         style={styles.input}
         value={nome}
-        onChangeText={setNome}
+        onChangeText={(text) => {
+          setNome(text);
+          setErros((prev) => ({ ...prev, nome: "" }));
+        }}
         placeholder="Digite seu nome"
         placeholderTextColor="#000"
       />
+      {erros.nome ? <Text style={styles.erro}>{erros.nome}</Text> : null}
 
       <Text style={styles.label}>Descrição</Text>
       <TextInput
         style={[styles.input, { height: 100 }]}
         multiline
         value={descricao}
-        onChangeText={setDescricao}
+        onChangeText={(text) => {
+          setDescricao(text);
+          setErros((prev) => ({ ...prev, descricao: "" }));
+        }}
         placeholder="Descreva a denúncia"
         placeholderTextColor="#000"
       />
+      {erros.descricao ? (
+        <Text style={styles.erro}>{erros.descricao}</Text>
+      ) : null}
 
       <Text style={styles.label}>Logradouro</Text>
       <TextInput
         style={styles.input}
         value={logradouro}
-        onChangeText={setLogradouro}
+        onChangeText={(text) => {
+          setLogradouro(text);
+          setErros((prev) => ({ ...prev, logradouro: "" }));
+        }}
         placeholder="Digite o logradouro"
         placeholderTextColor="#000"
       />
+      {erros.logradouro ? (
+        <Text style={styles.erro}>{erros.logradouro}</Text>
+      ) : null}
 
       <Text style={styles.label}>Bairro</Text>
       <TextInput
         style={styles.input}
         value={bairro}
-        onChangeText={setBairro}
+        onChangeText={(text) => {
+          setBairro(text);
+          setErros((prev) => ({ ...prev, bairro: "" }));
+        }}
         placeholder="Digite o bairro"
         placeholderTextColor="#000"
       />
+      {erros.bairro ? <Text style={styles.erro}>{erros.bairro}</Text> : null}
 
       <Text style={styles.label}>Cidade</Text>
       <TextInput
         style={styles.input}
         value={cidade}
-        onChangeText={setCidade}
+        onChangeText={(text) => {
+          setCidade(text);
+          setErros((prev) => ({ ...prev, cidade: "" }));
+        }}
         placeholder="Digite a cidade"
         placeholderTextColor="#000"
       />
+      {erros.cidade ? <Text style={styles.erro}>{erros.cidade}</Text> : null}
 
       <Text style={styles.label}>Estado</Text>
       <TextInput
         style={styles.input}
         value={estado}
-        onChangeText={setEstado}
+        onChangeText={(text) => {
+          setEstado(text);
+          setErros((prev) => ({ ...prev, estado: "" }));
+        }}
         placeholder="Digite o estado"
         placeholderTextColor="#000"
       />
+      {erros.estado ? <Text style={styles.erro}>{erros.estado}</Text> : null}
 
       <Text style={styles.label}>CEP</Text>
       <TextInput
         style={styles.input}
         value={cep}
-        onChangeText={(text) => setCep(formatarCep(text))}
+        onChangeText={(text) => {
+          setCep(formatarCep(text));
+          setErros((prev) => ({ ...prev, cep: "" }));
+        }}
         placeholder="00000-000"
         keyboardType="numeric"
         maxLength={9}
         placeholderTextColor="#000"
       />
+      {erros.cep ? <Text style={styles.erro}>{erros.cep}</Text> : null}
 
       <View style={styles.buttonContainer}>
-        <Button color="orange" title="Enviar denúncia" onPress={enviarDenuncia} />
+        <Button
+          color="orange"
+          title="Enviar denúncia"
+          onPress={enviarDenuncia}
+        />
       </View>
     </ScrollView>
   );
@@ -169,15 +251,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     borderRadius: 6,
   },
+  erro: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
+  },
   buttonContainer: {
     marginTop: 20,
     borderRadius: 6,
     overflow: "hidden",
   },
-  btn: {
-    width: 200,
-    height:60,
-    borderRadius: 20,
-    fontWeight: "bold",
-  }
 });
