@@ -121,7 +121,7 @@ function Historico({ navigation }: Props) {
       <TouchableOpacity style={styles.updateButton} onPress={carregarAlertas}>
         <Text style={styles.updateButtonText}>Atualizar Lista</Text>
       </TouchableOpacity>
-            <TouchableOpacity style={styles.updateButton} onPress={() => navigation.navigate("EditarAlerta")}>
+            <TouchableOpacity style={styles.updateButton} onPress={() => navigation.navigate("Alerta")}>
         <Text style={styles.updateButtonText}>Adicionar Novo Alerta</Text>
       </TouchableOpacity>
 

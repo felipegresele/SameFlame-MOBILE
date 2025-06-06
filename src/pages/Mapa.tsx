@@ -48,11 +48,9 @@ function Mapa({ navigation }: Props) {
     })();
   }, []);
 
-  // Pega dados mockados (se quiser pode manter ou remover)
   const abrigos = getAbrigos(location?.latitude ?? 0, location?.longitude ?? 0);
   const alertas = getAlertas(location?.latitude ?? 0, location?.longitude ?? 0);
 
-  // Inicializa incêndios mockados apenas na primeira renderização
   useEffect(() => {
     if (location) {
       const mockIncendios = getIncendios(location.latitude, location.longitude);
@@ -60,18 +58,15 @@ function Mapa({ navigation }: Props) {
     }
   }, [location]);
 
-  // Pega os dados enviados da tela RelatarIncendio
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       const params = navigation.getState().routes.find(r => r.name === "Mapa")?.params as any;
       if (params?.newIncendio) {
         const newInc = params.newIncendio as Incendio;
-        // Só adiciona se não existir (para evitar duplicados)
         setIncendios((old) => {
           if (old.some(i => i.id === newInc.id)) return old;
           return [...old, newInc];
         });
-        // Remove o param para não adicionar de novo
         navigation.setParams({ newIncendio: undefined });
       }
     });
@@ -95,12 +90,10 @@ function Mapa({ navigation }: Props) {
     longitudeDelta: 0.05,
   };
 
-  // Função ao tocar no mapa para selecionar local do incêndio
   function handleMapPress(event: MapPressEvent) {
     setSelectedLocation(event.nativeEvent.coordinate);
   }
 
-  // Navegar para tela de relatar incêndio com a coordenada selecionada
   function handleAddIncendio() {
     if (!selectedLocation) {
       Alert.alert("Selecione um local no mapa antes de adicionar um incêndio.");
@@ -135,10 +128,7 @@ function Mapa({ navigation }: Props) {
         {abrigos.map((abrigo) => (
           <Marker
             key={abrigo.id}
-            coordinate={{
-              latitude: abrigo.latitude,
-              longitude: abrigo.longitude,
-            }}
+            coordinate={{ latitude: abrigo.latitude, longitude: abrigo.longitude }}
             title={abrigo.nome}
             description={`Abrigo disponível - Capacidade: ${abrigo.capacidade}`}
             pinColor="green"
@@ -148,10 +138,7 @@ function Mapa({ navigation }: Props) {
         {alertas.map((alerta) => (
           <Marker
             key={alerta.id}
-            coordinate={{
-              latitude: alerta.latitude,
-              longitude: alerta.longitude,
-            }}
+            coordinate={{ latitude: alerta.latitude, longitude: alerta.longitude }}
             title="Alerta de incêndio"
             description={alerta.descricao}
             pinColor="red"
@@ -161,17 +148,13 @@ function Mapa({ navigation }: Props) {
         {incendios.map((incendio) => (
           <Marker
             key={incendio.id}
-            coordinate={{
-              latitude: incendio.latitude,
-              longitude: incendio.longitude,
-            }}
+            coordinate={{ latitude: incendio.latitude, longitude: incendio.longitude }}
             title={`Incêndio: ${incendio.tipo}`}
             description={`Status: ${incendio.status} - Fase: ${incendio.fase} - ${incendio.descricao}`}
             pinColor="#FF6B00"
           />
         ))}
 
-        {/* Marcador temporário para local selecionado */}
         {selectedLocation && (
           <Marker
             coordinate={selectedLocation}
@@ -185,9 +168,7 @@ function Mapa({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   map: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
@@ -207,7 +188,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     zIndex: 10,
   },
-
   button: {
     backgroundColor: "#FF6B00",
     paddingVertical: 10,
@@ -219,11 +199,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-
   dashboardButton: {
     backgroundColor: "#0066CC",
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
@@ -231,4 +209,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Mapa;
+export default Mapa
