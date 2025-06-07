@@ -31,6 +31,10 @@ O SameFlame foi idealizado para conectar rapidamente pessoas em situação de ri
 - Frontend: https://github.com/felipegresele/SameFlame-MOBILE
 - Backend (Java): https://github.com/felipegresele/SameFlame-JAVA
 
+### 📺 Link do Figma das telas do projeto
+
+Acesse por aqui: https://www.figma.com/design/RrrvuMxSpYRNZGIyM8qi6H/Untitled?node-id=0-1&t=tFtr4Dzu4rsyEb0b-1
+
 ### 📺 Vídeo de Demonstração
 
 Assista no YouTube: https://www.youtube.com/watch?v=zQPjXA3CF1o
